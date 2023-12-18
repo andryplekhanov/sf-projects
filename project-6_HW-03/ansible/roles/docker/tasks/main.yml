@@ -1,0 +1,94 @@
+---
+# Install Docker Ubuntu
+
+- name: Uninstall old versions packages Ubuntu
+  package: name="{{ old_docker_packages }}" state=absent
+  when: ansible_distribution == "Ubuntu"
+
+- name: Update packages Ubuntu
+  apt:
+    update_cache: yes
+  become: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install required packages Ubuntu
+  package: name="{{ required_ubuntu_packages }}" state=present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Create keyring directory Ubuntu
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+  when: ansible_distribution == "Ubuntu"
+
+- name: Check that the GPG key file Ubuntu
+  stat:
+    path: /etc/apt/keyrings/docker.gpg
+  register: stat_result
+  when: ansible_distribution == "Ubuntu"
+
+- name: Add Docker's official GPG key to keyring Ubuntu
+  shell: |
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+  when:
+    - ansible_distribution == "Ubuntu"
+    - not stat_result.stat.exists
+
+- name: Check docker repo Ubuntu
+  stat:
+    path: /etc/apt/sources.list.d/docker.list
+  register: stat_result_repo
+  when: ansible_distribution == "Ubuntu"
+
+- name: Set up Docker repository
+  shell: |
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  when:
+    - ansible_distribution == "Ubuntu"
+    - not stat_result.stat.exists
+
+- name: Updates packages Ubuntu
+  apt:
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install Docker Ubuntu
+  package: name="{{ new_docker_packages }}" state=present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Start and enable Docker service Ubuntu
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+  when: ansible_distribution == "Ubuntu"
+
+
+# Install Docker Centos 8
+
+- name: Uninstall old versions packages Centos 8
+  package: name="{{ old_docker_centos_packages }}" state=absent
+  when: "'CentOS' in ansible_distribution"
+
+- name: Installing required packages Centos 8
+  yum:
+    name:
+      yum-utils
+    state: present
+  when: "'CentOS' in ansible_distribution"
+
+- name: Set up the repository Centos 8
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  when: "'CentOS' in ansible_distribution"
+
+- name: Install Docker Centos 8
+  package: name="{{ new_docker_packages }}" state=present
+  when: "'CentOS' in ansible_distribution"
+
+- name: Start and enable Docker service Centos 8
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  when: "'CentOS' in ansible_distribution"

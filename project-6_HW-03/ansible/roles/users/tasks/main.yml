@@ -1,0 +1,37 @@
+---
+  -
+    name: Create user "ansible"
+    user:
+      name: ansible
+      password: "$6$DXvMUf8Tr93l.m67$3iUbvqmsNLwykM/DX2cC9Gu.uLAKSUiH5ylmtFPblZh/Ya1F.XUJu60dk.3xy1uSe/8EUWSzsM9y8dm65.CRl0"  # это зашифрованный пароль: "4444"
+      update_password: on_create
+      shell: /bin/bash
+      groups: sudo
+      append: yes
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+
+  -
+    name: Ensure group "ansible" in sudoers
+    lineinfile:
+      path: /etc/sudoers
+      line: "%ansible	ALL=(ALL) NOPASSWD: ALL"
+      state: present
+      regexp: '^%ansible	ALL='
+      validate: /usr/sbin/visudo -cf %s
+
+  -
+    name: Set authorized key for user ansible copying it from current user
+    authorized_key:
+      user: ansible
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+  -
+    name:  Make sure PasswordAuthentication ends with yes
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication'
+      line: PasswordAuthentication yes
+    notify: restart sshd

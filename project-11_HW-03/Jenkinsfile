@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+
+
+    stages {
+        stage('Build') {
+            steps {
+                git 'https://github.com/andryplekhanov/sf-ci-test.git'
+                sh "docker run -d --name nginx_test -p 9889:80 -v ${WORKSPACE}:/usr/share/nginx/html nginx:stable-alpine3.17-slim"
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh "./test_status_code.sh"
+                sh "./test_md5sum.sh"
+            }
+            
+            post {
+                unsuccessful {
+                    echo 'Test is failure, but we go on.'
+                    emailext attachLog: true, body: 'Test is failure, but we go on.', subject: 'Test is failure', to: 'anything@fbuxdkc8.mailosaur.net'
+                }
+                success {
+                    echo 'Test is OK!'
+                    
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'sleep 86400'
+            sh "docker stop nginx_test"
+            sh "docker rm nginx_test"
+        }
+    }
+}

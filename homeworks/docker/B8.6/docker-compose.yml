@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  php:
+    container_name: ${COMPOSE_PROJECT_NAME}-php
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./www:/var/www
+    networks:
+      - internal
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "http://nginx:80 | grep works || exit 1" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}-nginx
+    image: nginx:alpine3.17-slim
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - php
+    links:
+      - php
+    volumes:
+      - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf
+      - ./www:/var/www
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

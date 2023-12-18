@@ -1,0 +1,19 @@
+---
+old_docker_packages:
+  - docker.io
+  - docker-doc
+  - docker-compose
+  - podman-docker
+  - containerd runc
+
+required_ubuntu_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+
+new_docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin

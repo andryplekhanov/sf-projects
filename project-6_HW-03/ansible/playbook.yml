@@ -1,0 +1,33 @@
+---
+-
+  name: Create users
+  hosts:
+    - vm1
+    - vm2
+    - vm3
+  become: yes
+  roles:
+    - role: users
+
+-
+  name: Install ansible
+  hosts: vm1
+  become: yes
+  vars_files:
+    - variables.yml
+  roles:
+    - role: ansible
+
+-
+  name: Install docker
+  hosts: app
+  become: yes
+  roles:
+    - role: docker
+
+-
+  name: Install postgres
+  hosts: database
+  become: yes
+  roles:
+    - role: postgres

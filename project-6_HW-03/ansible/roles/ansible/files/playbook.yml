@@ -1,0 +1,10 @@
+-
+  name: Configure authorization from vm1 to vm2 and vm3.
+  hosts: app
+  tasks:
+
+    - name: Set authorized key for user ansible copying it from vm1
+      authorized_key:
+        user: ansible
+        state: present
+        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"

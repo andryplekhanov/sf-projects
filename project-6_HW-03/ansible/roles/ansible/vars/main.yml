@@ -1,0 +1,10 @@
+---
+# vars file for ansible
+php_fpm_extra_packages:
+  - php-mysql
+  - php-bcmath
+  - php-json
+  - php-mbstring
+  - php-tokenizer
+  - php-xml
+  - php-curl

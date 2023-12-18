@@ -1,0 +1,43 @@
+---
+-
+  name: Update packages
+  apt:
+    update_cache: yes
+
+-
+  name: Install software-properties-common
+  package:  name=software-properties-common state=present
+
+-
+  name: command before installation ansible
+  command: add-apt-repository --yes --update ppa:ansible/ansible
+
+-
+  name: Install ansible
+  package:  name=ansible state=present
+
+-
+  name: Copy 'ansible.cfg' from files
+  copy:
+    src: ../files/ansible.cfg
+    dest: /etc/ansible/
+
+-
+  name: Create inventory from template
+  template:
+    src: inventory.ini.j2
+    dest: /home/ansible/inventory.ini
+    owner: ansible
+    group: ansible
+
+-
+  name: Copy playbook from files
+  copy:
+    src: ../files/playbook.yml
+    dest: /home/ansible/
+    owner: ansible
+    group: ansible
+
+-
+  name: start playbook
+  command: ansible-playbook /home/ansible/playbook.yml -i /home/ansible/inventory.ini
