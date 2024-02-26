@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  labels:
+    app: {{ .Release.Name }}
+    component: {{ .Release.Namespace }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.nginx.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: {{ .Release.Namespace }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: {{ .Release.Namespace }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
